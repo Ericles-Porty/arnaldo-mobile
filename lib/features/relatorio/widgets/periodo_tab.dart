@@ -33,19 +33,28 @@ class _PeriodoTabState extends State<PeriodoTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Período selecionado:",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: _selecionarPeriodo,
-          child: Text("${_dataInicial.day}/${_dataInicial.month} - ${_dataFinal.day}/${_dataFinal.month}"),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 5,
+            children: [
+              const Text(
+                "Período selecionado:",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _selecionarPeriodo,
+                child: Text("${_dataInicial.day}/${_dataInicial.month} - ${_dataFinal.day}/${_dataFinal.month}"),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

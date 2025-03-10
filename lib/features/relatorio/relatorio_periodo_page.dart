@@ -1,7 +1,7 @@
 import 'package:arnaldo/features/relatorio/relatorio_controller.dart';
 import 'package:arnaldo/features/relatorio/widgets/anual_tab.dart';
-import 'package:arnaldo/features/relatorio/widgets/data_geral_tab.dart';
 import 'package:arnaldo/features/relatorio/widgets/mensal_tab.dart';
+import 'package:arnaldo/features/relatorio/widgets/periodo_tab.dart';
 import 'package:arnaldo/models/pessoa.dart';
 import 'package:flutter/material.dart';
 
@@ -33,9 +33,10 @@ class _RelatorioPeriodoPageState extends State<RelatorioPeriodoPage> {
       child: Scaffold(
         appBar: AppBar(
           iconTheme: const IconThemeData(color: Colors.white),
-          title: const Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: FittedBox(child: Text("Relatorio", style: TextStyle(color: Colors.white, fontSize: 36))),
+          title: Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child:
+                FittedBox(child: Text("Relatório de ${widget.pessoa.tipo} ${widget.pessoa.nome}", style: const TextStyle(color: Colors.white, fontSize: 36))),
           ),
           titleSpacing: NavigationToolbar.kMiddleSpacing,
           elevation: 0,

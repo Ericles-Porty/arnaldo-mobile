@@ -25,6 +25,7 @@ dependencies:
   permission_handler: ^11.3.1
   file_picker: ^8.1.2
   fl_chart: ^0.70.2
+  month_picker_dialog: ^6.0.3
 
 dev_dependencies:
   flutter_launcher_icons: "^0.13.1"

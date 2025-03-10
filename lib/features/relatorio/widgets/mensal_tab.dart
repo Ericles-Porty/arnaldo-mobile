@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class MensalTab extends StatefulWidget {
   const MensalTab({super.key});
@@ -12,47 +13,57 @@ class _MensalTabState extends State<MensalTab> {
 
   Future<void> _selecionarMes() async {
     DateTime now = DateTime.now();
-    DateTime? picked = await showDatePicker(
+    DateTime? mes = await showMonthPicker(
       context: context,
-      initialDate: _dataSelecionada,
       firstDate: DateTime(2023),
       lastDate: now,
-      locale: const Locale("pt", "BR"),
-      // Configura para o Brasil (opcional)
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            primaryColor: Colors.blue,
-            colorScheme: ColorScheme.light(primary: Colors.blue),
-            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+      initialDate: _dataSelecionada,
+      monthPickerDialogSettings: const MonthPickerDialogSettings(
+        actionBarSettings: PickerActionBarSettings(
+          confirmWidget: Padding(
+            padding: EdgeInsets.all(10.0),
+            child: Text("Selecionar"),
           ),
-          child: child!,
-        );
-      },
+          cancelWidget: Padding(
+            padding: EdgeInsets.all(10.0),
+            child: Text("Cancelar"),
+          ),
+          buttonSpacing: 20,
+        ),
+      ),
     );
 
-    if (picked != null) {
+    if (mes != null) {
       setState(() {
-        _dataSelecionada = DateTime(picked.year, picked.month);
+        _dataSelecionada = mes;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text(
-          "Mês selecionado:",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: _selecionarMes,
-          child: Text("${_dataSelecionada.month}/${_dataSelecionada.year}"),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 5,
+            children: [
+              const Text(
+                "Mês selecionado:",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: _selecionarMes,
+                child: Text("${_dataSelecionada.month}/${_dataSelecionada.year}"),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
