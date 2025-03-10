@@ -6,8 +6,8 @@ import 'package:arnaldo/widgets/my_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-class ListaPessoasPage extends StatelessWidget {
-  const ListaPessoasPage({super.key, required this.tipoPessoa});
+class ListaPessoasOperacoesPage extends StatelessWidget {
+  const ListaPessoasOperacoesPage({super.key, required this.tipoPessoa});
 
   final PessoaType tipoPessoa;
 

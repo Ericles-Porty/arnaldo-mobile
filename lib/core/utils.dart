@@ -1,3 +1,8 @@
+DateTime obterDataPorString(String data) {
+  final partes = data.split('-');
+  return DateTime(int.parse(partes[0]), int.parse(partes[1]), int.parse(partes[2]));
+}
+
 String formatarDataPadraoUs(DateTime date) {
   return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
 }

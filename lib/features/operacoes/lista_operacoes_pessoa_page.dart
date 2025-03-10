@@ -657,7 +657,7 @@ class _ListaOperacoesPessoaPageState extends State<ListaOperacoesPessoaPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await _controller.salvarOperacao(linhaOperacaoDto.copyWith(
+                    await _controller.atualizarOperacao(linhaOperacaoDto.copyWith(
                       quantidade: double.parse(textEditingController.text),
                     ));
                     Navigator.of(context).pop();
@@ -735,7 +735,7 @@ class _ListaOperacoesPessoaPageState extends State<ListaOperacoesPessoaPage> {
                 ElevatedButton(
                   child: const Text('Salvar', style: TextStyle(fontSize: 32)),
                   onPressed: () async {
-                    await _controller.salvarOperacao(linhaOperacaoDto.copyWith(
+                    await _controller.atualizarOperacao(linhaOperacaoDto.copyWith(
                       desconto: double.parse(textEditingController.text),
                     ));
                     Navigator.of(context).pop();

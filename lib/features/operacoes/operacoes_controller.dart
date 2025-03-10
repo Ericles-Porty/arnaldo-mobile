@@ -31,6 +31,21 @@ class OperacoesController {
     return await db.getPessoaOperacoesV2(data: dataSelecionada.value, pessoa: pessoa);
   }
 
+  Future<int> atualizarOperacao(LinhaOperacaoDto linhaOperacaoDto) async {
+    var db = Modular.get<DatabaseHelper>();
+
+    final operacao = await db.getOperacao(
+      idProduto: linhaOperacaoDto.produto.id,
+      idPessoa: linhaOperacaoDto.pessoa.id,
+      tipoOperacao: linhaOperacaoDto.pessoa.tipo == PessoaType.cliente.name ? OperacaoType.venda.name : OperacaoType.compra.name,
+      data: dataSelecionada.value,
+    );
+
+    if (operacao == null) return await salvarOperacao(linhaOperacaoDto);
+
+    return await db.updateOperacao(id: operacao.id, quantidade: linhaOperacaoDto.quantidade, desconto: linhaOperacaoDto.desconto);
+  }
+
   Future<int> salvarOperacao(LinhaOperacaoDto linhaOperacaoDto) async {
     var db = Modular.get<DatabaseHelper>();
 

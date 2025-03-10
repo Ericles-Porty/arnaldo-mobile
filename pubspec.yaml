@@ -24,6 +24,7 @@ dependencies:
   sqlite3_flutter_libs: ^0.5.24
   permission_handler: ^11.3.1
   file_picker: ^8.1.2
+  fl_chart: ^0.70.2
 
 dev_dependencies:
   flutter_launcher_icons: "^0.13.1"

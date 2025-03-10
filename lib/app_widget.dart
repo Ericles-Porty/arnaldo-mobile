@@ -23,6 +23,7 @@ class AppWidget extends StatelessWidget {
         Locale('pt', 'BR'), // Português Brasil
       ],
       routerConfig: Modular.routerConfig,
+      debugShowCheckedModeBanner: false,
     ); //added by extension
   }
 }

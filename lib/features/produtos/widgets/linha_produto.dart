@@ -20,7 +20,12 @@ class ProdutoController {
 
   Future<int> editarPrecoProduto({required int idProduto, required double preco, required ProdutoHistoricoType tipo}) async {
     final DatabaseHelper db = Modular.get<DatabaseHelper>();
-    return await db.insertProdutoHistorico(idProduto, tipo.name, preco, dataSelecionada);
+
+    final result = await db.insertProdutoHistorico(idProduto, tipo.name, preco, dataSelecionada);
+
+    await db.batchUpdatePrecosOperacoes(data: dataSelecionada);
+
+    return result;
   }
 }
 

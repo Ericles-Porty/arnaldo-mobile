@@ -26,8 +26,6 @@ void main() async {
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-
-
   //await resetDatabase();
 
   setPrintResolver((text) => print(text));
