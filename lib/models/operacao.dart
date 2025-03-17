@@ -10,6 +10,7 @@ class Operacao {
   final double preco;
   final double desconto;
   final String data;
+  final bool pago;
   final Pessoa? pessoa;
   final Produto? produto;
 
@@ -22,6 +23,7 @@ class Operacao {
       required this.preco,
       required this.desconto,
       required this.data,
+      required this.pago,
       this.pessoa,
       this.produto});
 
@@ -34,7 +36,8 @@ class Operacao {
       'quantidade': quantidade,
       'preco': preco,
       'desconto': desconto,
-      'data': data
+      'data': data,
+      'pago': pago ? 1 : 0,
     };
   }
 
@@ -48,6 +51,7 @@ class Operacao {
       preco: map['preco'],
       desconto: map['desconto'],
       data: map['data'],
+      pago: map['pago'] == 1,
     );
   }
 
@@ -60,6 +64,7 @@ class Operacao {
     double? preco,
     double? desconto,
     String? data,
+    bool? pago,
   }) {
     return Operacao(
       id: id ?? this.id,
@@ -70,6 +75,7 @@ class Operacao {
       preco: preco ?? this.preco,
       desconto: desconto ?? this.desconto,
       data: data ?? this.data,
+      pago: pago ?? this.pago,
     );
   }
 }

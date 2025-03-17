@@ -1,14 +1,27 @@
+import 'package:arnaldo/features/relatorio/relatorio_controller.dart';
+import 'package:arnaldo/models/pessoa.dart';
 import 'package:flutter/material.dart';
 import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class MensalTab extends StatefulWidget {
-  const MensalTab({super.key});
+  const MensalTab({super.key,required this.pessoa});
+
+  final Pessoa pessoa;
 
   @override
   State<MensalTab> createState() => _MensalTabState();
 }
 
 class _MensalTabState extends State<MensalTab> {
+
+  late RelatorioController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = RelatorioController();
+  }
+
   DateTime _dataSelecionada = DateTime.now();
 
   Future<void> _selecionarMes() async {

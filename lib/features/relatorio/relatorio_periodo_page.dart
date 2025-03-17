@@ -16,8 +16,6 @@ class RelatorioPeriodoPage extends StatefulWidget {
 
 class _RelatorioPeriodoPageState extends State<RelatorioPeriodoPage> {
   late RelatorioController _controller;
-  DateTime _dataInicial = DateTime.now().subtract(const Duration(days: 7));
-  DateTime _dataFinal = DateTime.now();
 
   @override
   void initState() {
@@ -56,11 +54,11 @@ class _RelatorioPeriodoPageState extends State<RelatorioPeriodoPage> {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            PeriodoTab(),
-            MensalTab(),
-            AnualTab(),
+            PeriodoTab(pessoa: widget.pessoa),
+            MensalTab(pessoa: widget.pessoa),
+            AnualTab(pessoa: widget.pessoa),
             // Center(child: Text('Geral')),
           ],
         ),

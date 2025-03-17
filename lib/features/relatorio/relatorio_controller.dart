@@ -1,19 +1,20 @@
 import 'package:arnaldo/core/database/database_helper.dart';
 import 'package:arnaldo/core/enums/pessoa_type.dart';
+import 'package:arnaldo/core/utils.dart';
 import 'package:arnaldo/features/operacoes/dtos/linha_operacao_dto.dart';
 import 'package:arnaldo/models/pessoa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 class RelatorioController {
-  final ValueNotifier<DateTime> dataSelecionadaInicio = ValueNotifier<DateTime>(DateTime.now().subtract(const Duration(days: 7)));
-  final ValueNotifier<DateTime> dataSelecionadaFim = ValueNotifier<DateTime>(DateTime.now());
+  final ValueNotifier<DateRange> periodo = ValueNotifier<DateRange>(DateRange(inicio: DateTime.now().subtract(const Duration(days: 7)), fim: DateTime.now()));
+  final ValueNotifier<Map<int, bool>> operacoesPagas = ValueNotifier<Map<int, bool>>({});
 
   String get dataSelecionadaInicioFormatadaPadraoBr =>
-      '${dataSelecionadaInicio.value.day.toString().padLeft(2, '0')}/${dataSelecionadaInicio.value.month.toString().padLeft(2, '0')}/${dataSelecionadaInicio.value.year}';
+      '${periodo.value.inicio.day.toString().padLeft(2, '0')}/${periodo.value.inicio.month.toString().padLeft(2, '0')}/${periodo.value.inicio.year}';
 
   String get dataSelecionadaFimFormatadaPadraoBr =>
-      '${dataSelecionadaFim.value.day.toString().padLeft(2, '0')}/${dataSelecionadaFim.value.month.toString().padLeft(2, '0')}/${dataSelecionadaFim.value.year}';
+      '${periodo.value.fim.day.toString().padLeft(2, '0')}/${periodo.value.fim.month.toString().padLeft(2, '0')}/${periodo.value.fim.year}';
 
   Future<List<Pessoa>> buscarPessoas(PessoaType tipoPessoa) async {
     var db = Modular.get<DatabaseHelper>();
@@ -21,9 +22,23 @@ class RelatorioController {
     return db.getPessoas(tipoPessoa.name);
   }
 
-  Future<List<LinhaOperacaoDto>> buscarOperacoes({required Pessoa pessoa, required DateTime dataInicial, required DateTime dataFinal}) async {
+  // Buscar Operações ao invés de buscar LinhaOperacaoDto
+  Future<List<LinhaOperacaoDto>> buscarOperacoes({required Pessoa pessoa, required DateRange periodo}) async {
     var db = Modular.get<DatabaseHelper>();
 
-    return db.getPessoaOperacoesByDateRange(pessoa: pessoa, dataInicial: dataInicial, dataFinal: dataFinal);
+    return db.getPessoaOperacoesByDateRange(pessoa: pessoa, dataInicial: periodo.inicio, dataFinal: periodo.fim);
   }
+
+  Future<int> atualizarPagoOperacao({required int idOperacao, required bool pago}) async {
+    var db = Modular.get<DatabaseHelper>();
+
+    return db.updateOperacaoPago(id: idOperacao, pago: pago);
+  }
+}
+
+class DateRange {
+  final DateTime inicio;
+  final DateTime fim;
+
+  DateRange({required this.inicio, required this.fim});
 }

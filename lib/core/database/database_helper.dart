@@ -460,6 +460,12 @@ class DatabaseHelper {
 
   /// Operacao
 
+  Future<Operacao> getOperacaoByPersonProductDate({required int idPessoa, required int idProduto, required DateTime data}) async {
+    final db = await database;
+    final response = await db.query('operacao', where: 'id_pessoa = ? AND id_produto_historico = ? AND data = ?', whereArgs: [idPessoa, idProduto, formatarDataPadraoUs(data)]);
+    return Operacao.fromMap(response.first);
+  }
+
   Future<List<LinhaOperacaoDto>> getPessoaOperacoesByDateRange({required DateTime dataInicial, required DateTime dataFinal, required Pessoa pessoa}) async {
     final db = await database;
 
@@ -469,20 +475,24 @@ class DatabaseHelper {
 
     for (var produtoPreco in produtosPrecosResponse.values.first) {
       operacoes.add(LinhaOperacaoDto(
+        id: 0,
         produto: Produto(id: produtoPreco.idProduto, nome: produtoPreco.nome, medida: ""),
         pessoa: pessoa,
         quantidade: 0,
         preco: pessoa.tipo == PessoaType.cliente.name ? produtoPreco.precoVenda : produtoPreco.precoCompra,
         desconto: 0,
         total: 0,
+        pago: false,
       ));
     }
 
     final response = await db.rawQuery('''
       SELECT 
+        O.id as id,
         O.quantidade as quantidade,
         O.desconto as desconto,
         O.comentario as comentario,
+        O.pago as pago,
         PR.id as id_produto,
         PR.nome as nome_produto,
         PR.medida as medida_produto,
@@ -497,11 +507,13 @@ class DatabaseHelper {
     for (var operacao in response) {
       final index = operacoes.indexWhere((element) => element.produto.nome == operacao['nome_produto']);
       operacoes[index] = operacoes[index].copyWith(
+        id: operacao['id'] as int,
         quantidade: operacao['quantidade'] as double,
         preco: operacoes[index].preco,
         desconto: operacao['desconto'] as double,
         total: operacoes[index].preco * (operacao['quantidade'] as double) - (operacao['desconto'] as double),
         comentario: operacao['comentario'] as String?,
+        pago: operacao['pago'] == 1,
       );
     }
 
@@ -518,20 +530,24 @@ class DatabaseHelper {
 
     for (var produtoPreco in produtosPrecosResponse) {
       operacoes.add(LinhaOperacaoDto(
+        id: 0,
         produto: produtosResponse.firstWhere((element) => element.id == produtoPreco.idProduto),
         pessoa: pessoa,
         quantidade: 0,
         preco: pessoa.tipo == PessoaType.cliente.name ? produtoPreco.precoVenda : produtoPreco.precoCompra,
         desconto: 0,
         total: 0,
+        pago: false,
       ));
     }
 
     final response = await db.rawQuery('''
       SELECT 
+        O.id as id,
         O.quantidade as quantidade,
         O.desconto as desconto,
         O.comentario as comentario,
+        O.pago as pago,
         PR.id as id_produto,
         PR.nome as nome_produto,
         PR.medida as medida_produto,
@@ -546,11 +562,13 @@ class DatabaseHelper {
     for (var operacao in response) {
       final index = operacoes.indexWhere((element) => element.produto.nome == operacao['nome_produto']);
       operacoes[index] = operacoes[index].copyWith(
+        id: operacao['id'] as int,
         quantidade: operacao['quantidade'] as double,
         preco: operacoes[index].preco,
         desconto: operacao['desconto'] as double,
         total: operacoes[index].preco * (operacao['quantidade'] as double) - (operacao['desconto'] as double),
         comentario: operacao['comentario'] as String?,
+        pago: operacao['pago'] == 1,
       );
     }
     return operacoes;
@@ -569,6 +587,7 @@ class DatabaseHelper {
         O.quantidade as quantidade,
         O.desconto as desconto,
         O.comentario as comentario,
+        O.pago as pago,
         PR.id as id_produto,
         PR.nome as nome_produto,
         PR.medida as medida_produto,
@@ -585,6 +604,7 @@ class DatabaseHelper {
       final precoProduto = produtosPrecosResponse.firstWhere((element) => element.idProduto == produto.id);
       final preco = pessoa.tipo == PessoaType.cliente.name ? precoProduto.precoVenda : precoProduto.precoCompra;
       return LinhaOperacaoDto(
+        id: operacao['id'] as int,
         produto: produto,
         pessoa: pessoa,
         quantidade: operacao['quantidade'] as double,
@@ -592,6 +612,7 @@ class DatabaseHelper {
         desconto: operacao['desconto'] as double,
         total: preco * (operacao['quantidade'] as double) - (operacao['desconto'] as double),
         comentario: operacao['comentario'] as String?,
+        pago: operacao['pago'] == 1,
       );
     }).toList();
 
@@ -632,6 +653,7 @@ class DatabaseHelper {
         preco: operacao['preco'],
         desconto: operacao['desconto'],
         data: operacao['data'],
+        pago: operacao['pago'] == 1,
         pessoa: pessoa,
         produto: produto,
       );
@@ -727,6 +749,11 @@ class DatabaseHelper {
   Future<int> updateOperacaoDesconto({required int id, required double desconto}) async {
     final db = await database;
     return await db.update('operacao', {'desconto': desconto}, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> updateOperacaoPago({required int id, required bool pago}) async {
+    final db = await database;
+    return await db.update('operacao', {'pago': pago ? 1 : 0}, where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> deleteOperacao(int id) async {

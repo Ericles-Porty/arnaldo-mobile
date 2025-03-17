@@ -572,12 +572,14 @@ class _ListaOperacoesPessoaPageState extends State<ListaOperacoesPessoaPage> {
                           child: Text(produto.nome, style: const TextStyle(fontSize: 32)),
                           onPressed: () async {
                             LinhaOperacaoDto linhaOperacaoDto = LinhaOperacaoDto(
+                              id: 0,
                               pessoa: widget.pessoa,
                               produto: produto,
                               quantidade: 0,
                               preco: 0,
                               total: 0,
                               desconto: 0,
+                              pago: false,
                             );
                             await _controller.salvarOperacao(linhaOperacaoDto);
                             Navigator.of(context).pop();

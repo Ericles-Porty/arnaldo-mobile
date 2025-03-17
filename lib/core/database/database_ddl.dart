@@ -44,10 +44,10 @@ Future<void> databaseDdl(Database db, int version) async {
         id_pessoa INTEGER,
         quantidade REAL,
         preco REAL,
-        valor REAL,   
         data TEXT,   
         tipo TEXT CHECK(tipo IN ('compra', 'venda')),
         desconto REAL DEFAULT 0,
+        pago INTEGER DEFAULT 0,
         comentario TEXT,
         FOREIGN KEY (id_produto_historico) REFERENCES produto_historico (id),
         FOREIGN KEY (id_pessoa) REFERENCES pessoa (id) ON DELETE CASCADE
