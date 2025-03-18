@@ -460,6 +460,28 @@ class DatabaseHelper {
 
   /// Operacao
 
+  Future<List<Operacao>> getOperacoesByPersonAndDateRange({required int idPessoa, required DateTime dataInicial, required DateTime dataFinal}) async {
+    final db = await database;
+    final response = await db.query('operacao', where: 'id_pessoa = ? AND data BETWEEN ? AND ?', whereArgs: [idPessoa, formatarDataPadraoUs(dataInicial), formatarDataPadraoUs(dataFinal)]);
+
+    var operacoes = <Operacao>[];
+
+    for (var operacao in response) {
+      var produtoHistorico = await getProductHistoricoById(operacao['id_produto_historico'] as int);
+      var produto = await getProduto(produtoHistorico!.idProduto);
+      var pessoa = await getPessoa(operacao['id_pessoa'] as int);
+
+      var novaOperacao = Map<String, dynamic>.from(operacao);
+
+      novaOperacao['produto'] = produto;
+      novaOperacao['pessoa'] = pessoa;
+
+      operacoes.add(Operacao.fromMap(novaOperacao));
+    }
+
+    return operacoes;
+  }
+
   Future<Operacao> getOperacaoByPersonProductDate({required int idPessoa, required int idProduto, required DateTime data}) async {
     final db = await database;
     final response = await db.query('operacao', where: 'id_pessoa = ? AND id_produto_historico = ? AND data = ?', whereArgs: [idPessoa, idProduto, formatarDataPadraoUs(data)]);

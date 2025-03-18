@@ -2,6 +2,7 @@ import 'package:arnaldo/core/database/database_helper.dart';
 import 'package:arnaldo/core/enums/pessoa_type.dart';
 import 'package:arnaldo/core/utils.dart';
 import 'package:arnaldo/features/operacoes/dtos/linha_operacao_dto.dart';
+import 'package:arnaldo/models/operacao.dart';
 import 'package:arnaldo/models/pessoa.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -22,11 +23,10 @@ class RelatorioController {
     return db.getPessoas(tipoPessoa.name);
   }
 
-  // Buscar Operações ao invés de buscar LinhaOperacaoDto
-  Future<List<LinhaOperacaoDto>> buscarOperacoes({required Pessoa pessoa, required DateRange periodo}) async {
+  Future<List<Operacao>> buscarOperacoes({required int idPessoa, required DateRange periodo}) async {
     var db = Modular.get<DatabaseHelper>();
 
-    return db.getPessoaOperacoesByDateRange(pessoa: pessoa, dataInicial: periodo.inicio, dataFinal: periodo.fim);
+    return db.getOperacoesByPersonAndDateRange(idPessoa: idPessoa, dataInicial: periodo.inicio, dataFinal: periodo.fim);
   }
 
   Future<int> atualizarPagoOperacao({required int idOperacao, required bool pago}) async {

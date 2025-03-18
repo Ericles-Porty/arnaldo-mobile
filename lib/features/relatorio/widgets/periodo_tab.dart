@@ -1,5 +1,6 @@
-import 'package:arnaldo/features/operacoes/dtos/linha_operacao_dto.dart';
+import 'package:arnaldo/core/utils.dart';
 import 'package:arnaldo/features/relatorio/relatorio_controller.dart';
+import 'package:arnaldo/models/operacao.dart';
 import 'package:arnaldo/models/pessoa.dart';
 import 'package:flutter/material.dart';
 
@@ -21,19 +22,13 @@ class _PeriodoTabState extends State<PeriodoTab> {
     _controller = RelatorioController();
   }
 
-  // DateTime _dataInicial = DateTime.now().subtract(const Duration(days: 7));
-  // DateTime _dataFinal = DateTime.now();
-
   Future<void> _selecionarPeriodo() async {
-    DateTime now = DateTime.now();
-    DateTime dataInicio = now.subtract(Duration(days: now.weekday));
-    DateTime dataFim = now.add(Duration(days: DateTime.daysPerWeek - now.weekday - 1));
-
+    final amanha = DateTime.now().add(const Duration(days: 1));
     DateTimeRange? picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2023),
-      lastDate: dataFim,
-      initialDateRange: DateTimeRange(start: dataInicio, end: dataFim),
+      lastDate: amanha,
+      initialDateRange: DateTimeRange(start: _controller.periodo.value.inicio, end: _controller.periodo.value.fim),
     );
 
     if (picked != null) {
@@ -50,7 +45,7 @@ class _PeriodoTabState extends State<PeriodoTab> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 5,
+            spacing: 5,''
             children: [
               const Text(
                 "Período selecionado:",
@@ -67,8 +62,8 @@ class _PeriodoTabState extends State<PeriodoTab> {
             valueListenable: _controller.periodo,
             builder: (BuildContext context, DateRange value, Widget? child) {
               return FutureBuilder(
-                  future: _controller.buscarOperacoes(pessoa: widget.pessoa, periodo: value),
-                  builder: (BuildContext context, AsyncSnapshot<List<LinhaOperacaoDto>> snapshot) {
+                  future: _controller.buscarOperacoes(idPessoa: widget.pessoa.id, periodo: value),
+                  builder: (BuildContext context, AsyncSnapshot<List<Operacao>> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
                     }
@@ -83,11 +78,13 @@ class _PeriodoTabState extends State<PeriodoTab> {
                           const Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
+                              Text("Data"),
                               Text("Produto"),
                               Text("Quantidade"),
                               Text("Preço"),
                               Text("Desconto"),
                               Text("Total"),
+                              Text("Comentário"),
                               Text("Pago"),
                             ],
                           ),
@@ -98,22 +95,27 @@ class _PeriodoTabState extends State<PeriodoTab> {
                                 return Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(snapshot.data![index].produto.nome),
+                                    Text(formatarDataPadraoBr(obterDataPorString(snapshot.data![index].data))),
+                                    Text(snapshot.data![index].produto!.nome),
                                     Text(snapshot.data![index].quantidade.toString()),
                                     Text(snapshot.data![index].preco.toString()),
                                     Text(snapshot.data![index].desconto.toString()),
-                                    Text(snapshot.data![index].total.toString()),
-                                    ValueListenableBuilder(valueListenable: _controller.operacoesPagas, builder: (context, value, child) {
-                                      return Checkbox(
-                                        value: value[snapshot.data![index].id] ?? false,
-                                        onChanged: (bool? value) {
-                                            final operacaoAtualizada = snapshot.data![index].copyWith(pago: value ?? false);
-                                            _controller.atualizarPagoOperacao(idOperacao: operacaoAtualizada.id, pago: value!);
-                                            snapshot.data![index] = operacaoAtualizada;
-                                            _controller.operacoesPagas.value[snapshot.data![index].id] = value ?? false;
-                                        },
-                                      );
-                                    }),
+                                    Text(formatarValorMonetario(
+                                        snapshot.data![index].quantidade * snapshot.data![index].preco - snapshot.data![index].desconto)),
+                                    Text(snapshot.data![index].comentario ?? ''),
+                                    ValueListenableBuilder(
+                                        valueListenable: _controller.operacoesPagas,
+                                        builder: (context, value, child) {
+                                          return Checkbox(
+                                            value: value[snapshot.data![index].id] ?? false,
+                                            onChanged: (bool? value) {
+                                              final operacaoAtualizada = snapshot.data![index].copyWith(pago: value ?? false);
+                                              _controller.atualizarPagoOperacao(idOperacao: operacaoAtualizada.id, pago: value!);
+                                              snapshot.data![index] = operacaoAtualizada;
+                                              _controller.operacoesPagas.value[snapshot.data![index].id] = value ?? false;
+                                            },
+                                          );
+                                        }),
                                   ],
                                 );
                               },
