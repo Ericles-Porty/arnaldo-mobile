@@ -9,6 +9,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 class RelatorioController {
   final ValueNotifier<DateRange> periodo = ValueNotifier<DateRange>(DateRange(inicio: DateTime.now().subtract(const Duration(days: 7)), fim: DateTime.now()));
+  final ValueNotifier<int> anoSelecionado = ValueNotifier<int>(DateTime.now().year);
   final ValueNotifier<Map<int, bool>> operacoesPagas = ValueNotifier<Map<int, bool>>({});
 
   String get dataSelecionadaInicioFormatadaPadraoBr =>
@@ -23,10 +24,14 @@ class RelatorioController {
     return db.getPessoas(tipoPessoa.name);
   }
 
+  final ValueNotifier<List<Operacao>> operacoes = ValueNotifier<List<Operacao>>([]);
+
   Future<List<Operacao>> buscarOperacoes({required int idPessoa, required DateRange periodo}) async {
     var db = Modular.get<DatabaseHelper>();
-
-    return db.getOperacoesByPersonAndDateRange(idPessoa: idPessoa, dataInicial: periodo.inicio, dataFinal: periodo.fim);
+    var listaOperacoes = await db.listarOperacoes(idPessoa: idPessoa, dataInicio: periodo.inicio, dataFim: periodo.fim);
+    operacoes.value = listaOperacoes;
+    return listaOperacoes;
+    // return db.getOperacoesByPersonAndDateRange(idPessoa: idPessoa, dataInicial: periodo.inicio, dataFinal: periodo.fim);
   }
 
   Future<int> atualizarPagoOperacao({required int idOperacao, required bool pago}) async {
@@ -34,6 +39,7 @@ class RelatorioController {
 
     return db.updateOperacaoPago(id: idOperacao, pago: pago);
   }
+
 }
 
 class DateRange {

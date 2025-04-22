@@ -11,6 +11,7 @@ import 'package:arnaldo/models/pessoa.dart';
 import 'package:arnaldo/models/produto.dart';
 import 'package:arnaldo/models/produto_historico.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,14 +25,13 @@ class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
   static Database? _database;
 
-  factory DatabaseHelper() {
-    return _instance;
-  }
+  factory DatabaseHelper() => _instance;
 
+  //#region Helpers
   Future<void> warmUp() async {
-    print('Warming up database');
+    if (kDebugMode) print('Warming up database');
     await openDatabaseConnection();
-    print('Database warmed up');
+    if (kDebugMode) print('Database warmed up');
   }
 
   Future<void> fake() async {}
@@ -75,57 +75,50 @@ class DatabaseHelper {
   }
 
   Future<(bool, String)> importDatabase() async {
-    // Seleciona o arquivo de backup
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.any,
     );
 
-    // Verifica se o arquivo foi selecionado
-    if (result != null && result.files.single.path != null) {
-      final pickedFilePath = result.files.single.path!;
-      final pickedFile = File(pickedFilePath);
+    if (result == null || result.files.single.path == null) return (false, 'Nenhum arquivo selecionado.');
 
-      // Verifica se o arquivo selecionado existe
-      if (!await pickedFile.exists()) {
-        return (false, 'Arquivo selecionado não encontrado.');
-      }
+    final pickedFilePath = result.files.single.path!;
+    final pickedFile = File(pickedFilePath);
 
-      // Verifica se o arquivo selecionado é um arquivo de banco de dados
-      if (extension(pickedFilePath) != '.db') {
-        return (false, 'Arquivo selecionado não é um arquivo de banco de dados.');
-      }
+    if (!await pickedFile.exists()) return (false, 'Arquivo selecionado não encontrado.');
 
-      // Copia o arquivo de banco de dados atual para um arquivo de backup
-      await createDatabaseCopy();
+    if (extension(pickedFilePath) != '.db') return (false, 'Arquivo selecionado não é um arquivo de banco de dados.');
 
-      // Fechar a conexão com o banco de dados antes de substituir
-      await closeDatabaseConnection();
+    // Copia o arquivo de banco de dados atual para um arquivo de backup
+    await createDatabaseCopy();
 
-      // Substitui o arquivo de banco de dados atual pelo arquivo importado
-      final dbPath = await getDatabasePath();
-      final copiedFile = await pickedFile.copy(dbPath);
+    // Fechar a conexão com o banco de dados antes de substituir
+    await closeDatabaseConnection();
 
-      // Reinicializa a conexão com o banco de dados
-      await openDatabaseConnection();
+    // Substitui o arquivo de banco de dados atual pelo arquivo importado
+    final dbPath = await getDatabasePath();
+    final copiedFile = await pickedFile.copy(dbPath);
 
-      return (true, 'Banco de dados importado com sucesso.');
-    }
-    return (false, 'Nenhum arquivo selecionado.');
+    // Reinicializa a conexão com o banco de dados
+    await openDatabaseConnection();
+
+    return (true, 'Banco de dados importado com sucesso.');
   }
 
   Future<void> closeDatabaseConnection() async {
-    if (_database != null) {
-      await _database!.close();
-      _database = null;
-    }
+    if (_database == null) return;
+    if (kDebugMode) print('Closing database connection');
+    await _database!.close();
+    _database = null;
   }
 
   Future<void> openDatabaseConnection() async {
     _database ??= await _initDatabase();
+    if (kDebugMode) print('Database connection opened');
   }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
+
     _database = await _initDatabase();
     return _database!;
   }
@@ -149,7 +142,9 @@ class DatabaseHelper {
     await databaseSeed(db, version);
   }
 
-  /// Pessoa
+  //#endregion
+
+  //#region Pessoa
   Future<Pessoa> getPessoa(int id) async {
     final db = await database;
     final response = await db.query('pessoa', where: 'id = ?', whereArgs: [id]);
@@ -183,7 +178,9 @@ class DatabaseHelper {
     return await db.update('pessoa', {'ativo': ativo ? 1 : 0}, where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Produto
+//#endregion
+
+  //#region Produto
   Future<Produto> getProduto(int id) async {
     final db = await database;
     final response = await db.query('produto', where: 'id = ?', whereArgs: [id]);
@@ -211,7 +208,9 @@ class DatabaseHelper {
     return await db.delete('produto', where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Produto Historico
+//#endregion
+
+  //#region Produto Historico
   Future<LinhaProdutoDto> getProdutoPreco(int idProduto, DateTime dataSelecionada) async {
     final db = await database;
 
@@ -255,7 +254,7 @@ class DatabaseHelper {
     );
   }
 
-  Future<Map<DateTime, List<LinhaProdutoDto>>> getProdutosPrecosByDateRange({required DateTime dataInicial,required DateTime dataFinal}) async {
+  Future<Map<DateTime, List<LinhaProdutoDto>>> getProdutosPrecosByDateRange({required DateTime dataInicial, required DateTime dataFinal}) async {
     final db = await database;
 
     const produtosPrecosCompraQuery = '''
@@ -458,11 +457,87 @@ class DatabaseHelper {
     return await db.delete('produto_historico', where: 'id = ?', whereArgs: [id]);
   }
 
-  /// Operacao
+//#endregion
+
+  //#region Operacao
+  Future<List<Operacao>> listarOperacoes({
+    required int idPessoa,
+    required DateTime dataInicio,
+    required DateTime dataFim,
+  }) async {
+    final inicioStr = formatarDataHoraPadraoUs(dataInicio).substring(0, 10);
+    final fimStr = formatarDataHoraPadraoUs(dataFim).substring(0, 10);
+
+    final db = await database;
+
+    final result = await db.rawQuery('''
+    SELECT 
+      o.id AS id,
+      o.quantidade,
+      o.preco AS preco_operacao,
+      o.tipo AS tipo_operacao,
+      o.data AS data_operacao,
+      o.desconto,
+      o.pago,
+      o.comentario,
+      
+      ph.id AS id_produto_historico,
+      ph.tipo AS tipo_produto_historico,
+      ph.data AS data_produto_historico,
+      ph.preco AS preco_historico,
+          
+      p.id AS id_produto, 
+      p.nome AS nome_produto,
+      p.medida,
+
+      pes.id AS id_pessoa,
+      pes.nome AS nome_pessoa,
+      pes.tipo AS tipo_pessoa,
+      pes.ativo AS ativo_pessoa
+
+    FROM operacao o
+    INNER JOIN produto_historico ph ON o.id_produto_historico = ph.id
+    INNER JOIN produto p ON ph.id_produto = p.id
+    INNER JOIN pessoa pes ON o.id_pessoa = pes.id
+
+    WHERE o.id_pessoa = ?
+      AND date(o.data) BETWEEN date(?) AND date(?)
+
+    ORDER BY o.data DESC
+  ''', [idPessoa, inicioStr, fimStr]);
+
+    return result.map((row) {
+      return Operacao(
+        id: row['id'] as int,
+        idProdutoHistorico: row['id_produto_historico'] as int,
+        idPessoa: row['id_pessoa'] as int,
+        tipo: row['tipo_operacao'] as String,
+        quantidade: row['quantidade'] as double,
+        preco: row['preco_operacao'] as double,
+        desconto: row['desconto'] as double,
+        data: row['data_operacao'] as String,
+        pago: row['pago'] == 1,
+        comentario: row['comentario'] as String?,
+        produto: Produto(
+          id: row['id_produto_historico'] as int,
+          nome: row['nome_produto'] as String,
+          medida: row['medida'] as String,
+        ),
+        pessoa: Pessoa(
+          id: row['id_pessoa'] as int,
+          nome: row['nome_pessoa'] as String,
+          tipo: row['tipo_pessoa'] as String,
+          ativo: row['ativo_pessoa'] == 1,
+        ),
+      );
+    }).toList();
+  }
+
 
   Future<List<Operacao>> getOperacoesByPersonAndDateRange({required int idPessoa, required DateTime dataInicial, required DateTime dataFinal}) async {
     final db = await database;
-    final response = await db.query('operacao', where: 'id_pessoa = ? AND data BETWEEN ? AND ?', whereArgs: [idPessoa, formatarDataPadraoUs(dataInicial), formatarDataPadraoUs(dataFinal)]);
+    final response = await db.query('operacao',
+        where: 'id_pessoa = ? AND data BETWEEN ? AND ?', whereArgs: [idPessoa, formatarDataPadraoUs(dataInicial), formatarDataPadraoUs(dataFinal)]);
 
     var operacoes = <Operacao>[];
 
@@ -484,7 +559,8 @@ class DatabaseHelper {
 
   Future<Operacao> getOperacaoByPersonProductDate({required int idPessoa, required int idProduto, required DateTime data}) async {
     final db = await database;
-    final response = await db.query('operacao', where: 'id_pessoa = ? AND id_produto_historico = ? AND data = ?', whereArgs: [idPessoa, idProduto, formatarDataPadraoUs(data)]);
+    final response = await db
+        .query('operacao', where: 'id_pessoa = ? AND id_produto_historico = ? AND data = ?', whereArgs: [idPessoa, idProduto, formatarDataPadraoUs(data)]);
     return Operacao.fromMap(response.first);
   }
 
@@ -782,4 +858,5 @@ class DatabaseHelper {
     final db = await database;
     return await db.delete('operacao', where: 'id = ?', whereArgs: [id]);
   }
+//#endregion
 }
