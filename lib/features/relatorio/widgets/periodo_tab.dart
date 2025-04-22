@@ -45,7 +45,7 @@ class _PeriodoTabState extends State<PeriodoTab> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 5,''
+            spacing: 5,
             children: [
               const Text(
                 "Período selecionado:",
