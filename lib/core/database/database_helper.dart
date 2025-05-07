@@ -533,7 +533,6 @@ class DatabaseHelper {
     }).toList();
   }
 
-
   Future<List<Operacao>> getOperacoesByPersonAndDateRange({required int idPessoa, required DateTime dataInicial, required DateTime dataFinal}) async {
     final db = await database;
     final response = await db.query('operacao',

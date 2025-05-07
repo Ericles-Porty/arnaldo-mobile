@@ -33,17 +33,26 @@ class _ListaPessoasRelatorioPageState extends State<ListaPessoasRelatorioPage> {
         future: _controller.buscarPessoas(widget.pessoaType),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) return Text('Erro: ${snapshot.error}');
+            if (snapshot.hasError) return Center(child: Text('Erro: ${snapshot.error}, tente novamente', style: const TextStyle(fontSize: 24)));
 
-            if (snapshot.data == null) return const Text("Não foi possível carregar os dados");
+            if (snapshot.data == null) return const Center(child: Text("Não foi possível carregar os dados", style: TextStyle(fontSize: 24)));
 
-            if (snapshot.data!.isEmpty) return const Text('Nenhuma pessoa encontrada');
+            if (snapshot.data!.isEmpty) return const Center(child: Text('Nenhuma pessoa encontrada', style: TextStyle(fontSize: 24)));
 
             return ListView.builder(
               itemCount: snapshot.data!.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(snapshot.data![index].nome),
+                  minVerticalPadding: 20,
+                  tileColor: index.isEven ? Colors.grey[200] : Colors.white,
+                  title: Text(
+                    snapshot.data![index].nome,
+                    style: TextStyle(decoration: snapshot.data![index].ativo ? TextDecoration.none : TextDecoration.lineThrough),
+                  ),
+                  titleTextStyle: const TextStyle(fontSize: 24, color: Colors.black),
+                  onTap: () {
+                    Modular.to.pushNamed('/relatorio/pessoa', arguments: snapshot.data![index]);
+                  },
                   trailing: IconButton(
                     icon: const Icon(Icons.arrow_forward),
                     onPressed: () {

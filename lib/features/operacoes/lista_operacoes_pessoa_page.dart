@@ -338,7 +338,8 @@ class _ListaOperacoesPessoaPageState extends State<ListaOperacoesPessoaPage> {
                                 ),
                                 if (_controller.produtosSemOperacao.isNotEmpty)
                                   ElevatedButton(
-                                    child: Text('Adicionar nova ${widget.pessoa.tipo == PessoaType.cliente.name ? 'venda' : 'compra'}', style: TextStyle(fontSize: 24)),
+                                    child: Text('Adicionar nova ${widget.pessoa.tipo == PessoaType.cliente.name ? 'venda' : 'compra'}',
+                                        style: TextStyle(fontSize: 24)),
                                     onPressed: () async {
                                       var produtosSemOperacao = await _controller.fetchProdutosSemOperacao(pessoa: widget.pessoa, data: data);
                                       await _showModalBottomSheetAdicionarOperacao(context: context, produtosSemOperacao: produtosSemOperacao);

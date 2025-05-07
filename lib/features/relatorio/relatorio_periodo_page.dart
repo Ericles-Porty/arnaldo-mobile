@@ -50,7 +50,7 @@ class _RelatorioPeriodoPageState extends State<RelatorioPeriodoPage> {
               Tab(text: 'Período', icon: Icon(Icons.date_range)),
               Tab(text: 'Mensal', icon: Icon(Icons.calendar_view_month)),
               Tab(text: 'Anual', icon: Icon(Icons.calendar_month)),
-              // Tab(text: 'Geral'),
+              // Tab(text: 'Geral', icon: Icon(Icons.calendar_today)),
             ],
           ),
         ),

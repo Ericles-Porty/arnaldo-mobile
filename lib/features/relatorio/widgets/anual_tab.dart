@@ -100,25 +100,24 @@ class _AnualTabState extends State<AnualTab> {
                     return Column(
                       children: [
                         Container(
+                          width: double.infinity,
                           color: Colors.grey[300],
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 2),
                           child: const OperacaoHeader(),
                         ),
                         Expanded(
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
-                                ...operacoes.map((op) {
-                                  return Container(
+                                for (int i = 0; i < operacoes.length; i++)
+                                  Container(
                                     decoration: BoxDecoration(
                                       border: Border(
                                         bottom: BorderSide(color: Colors.grey[300]!),
                                       ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                                    child: operacaoRow(op),
-                                  );
-                                })
+                                    child: operacaoRow(operacoes[i], cor: i % 2 == 1 ? Colors.grey[200] : Colors.white),
+                                  ),
                               ],
                             ),
                           ),
@@ -135,20 +134,42 @@ class _AnualTabState extends State<AnualTab> {
     );
   }
 
-  Row operacaoRow(Operacao op) {
+  Widget operacaoRow(Operacao op, {Color? cor}) {
     final total = (op.preco * op.quantidade) - op.desconto;
     final dataFormatada = formatarDataPadraoBr(obterDataPorString(op.data));
-    return Row(
-      children: [
-        _Cell(dataFormatada),
-        _Cell(op.produto?.nome ?? '-'),
-        _Cell(op.quantidade.toString()),
-        _Cell('R\$ ${op.preco.toStringAsFixed(2)}'),
-        _Cell('R\$ ${op.desconto.toStringAsFixed(2)}'),
-        _Cell('R\$ ${total.toStringAsFixed(2)}'),
-        _Cell(op.comentario ?? '-'),
-        _Cell(op.pago ? 'Sim' : 'Não'),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 1),
+      color: cor ?? Colors.white,
+      child: Row(
+        children: [
+          _Cell(dataFormatada),
+          _Cell(op.produto?.nome ?? '-'),
+          _Cell(op.quantidade.toString()),
+          _Cell('R\$ ${op.preco.toStringAsFixed(2)}'),
+          _Cell('R\$ ${op.desconto.toStringAsFixed(2)}'),
+          _Cell('R\$ ${total.toStringAsFixed(2)}'),
+          _Cell(op.comentario ?? '-'),
+          switchCell(op),
+        ],
+      ),
+    );
+  }
+
+  SizedBox switchCell(Operacao op) {
+    return SizedBox(
+      width: 76,
+      child: ValueListenableBuilder(
+          valueListenable: _controller.operacoesPagas[op.id]!,
+          builder: (BuildContext context, bool pago, Widget? child) {
+            return Switch(
+              value: pago,
+              onChanged: (bool value) async => await _controller.atualizarPagoOperacao(idOperacao: op.id, pago: value),
+              activeColor: Colors.green,
+              activeTrackColor: Colors.green[200],
+              inactiveThumbColor: Colors.red,
+              inactiveTrackColor: Colors.red[200],
+            );
+          }),
     );
   }
 }
@@ -182,13 +203,15 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+    return SizedBox(
+      width: 76,
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: const TextStyle(fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
       ),
     );
   }
@@ -202,8 +225,8 @@ class _Cell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 120,
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      width: 76,
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Text(text, textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
     );
   }
